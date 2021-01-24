@@ -39,9 +39,9 @@ Adafruit_ADXL345_Unified adxl345 = Adafruit_ADXL345_Unified(12345);
 #define ADXL345_ADDR            0x53
 
 struct {
-  uint16_t ax = 0;
-  uint16_t ay = 0;
-  uint16_t az = 0;
+  float ax = 0;
+  float ay = 0;
+  float az = 0;
   bool ready = false;
 } adxl345_sensors;
 
@@ -61,9 +61,9 @@ void adxl345PerformReading(void)
 {
   sensors_event_t event;
   adxl345.getEvent(&event);
-  adxl345_sensors.ax = event.acceleration.x;
-  adxl345_sensors.ay = event.acceleration.y;
-  adxl345_sensors.az = event.acceleration.z;
+  adxl345_sensors.ax = event.acceleration.x*1000.0;
+  adxl345_sensors.ay = event.acceleration.y*1000.0;
+  adxl345_sensors.az = event.acceleration.z*1000.0;
 }
 
 
@@ -96,11 +96,14 @@ void adxl345Show(bool json)
 
   if (json) {
     char json_axis_ax[25];
-    snprintf_P(json_axis_ax, sizeof(json_axis_ax), PSTR(",\"" D_JSON_AXIS_AX "\":%s"), axis_ax);
+    snprintf_P(json_axis_ax, sizeof(json_axis_ax), PSTR("\"" D_JSON_AXIS_AX "\":%s"), axis_ax);
     char json_axis_ay[25];
     snprintf_P(json_axis_ay, sizeof(json_axis_ay), PSTR(",\"" D_JSON_AXIS_AY "\":%s"), axis_ay);
     char json_axis_az[25];
     snprintf_P(json_axis_az, sizeof(json_axis_az), PSTR(",\"" D_JSON_AXIS_AZ "\":%s"), axis_az);
+
+    ResponseAppend_P(PSTR(",\"%s\":{%s%s%s}"),
+      ADXL345, json_axis_ax, json_axis_ay, json_axis_az);
 
 #ifdef USE_WEBSERVER
   } else {
